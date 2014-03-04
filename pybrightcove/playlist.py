@@ -143,7 +143,7 @@ class Playlist(object):
 
         for video in data.get('videos', []):
             self.videos.append(pybrightcove.video.Video(
-                data=video, connection=self.connection))
+                data=video, _connection=self.connection))
 
     def save(self):
         """
