@@ -175,6 +175,8 @@ class APIConnection(Connection):
         if not hasattr(self, "read_token"):
             raise exceptions.ImproperlyConfiguredError(
                 "Must specify at least a read_token.")
+        self._api_url = None
+        self._api_raw_data = None
 
     def _post(self, data, file_to_upload=None):
         """
@@ -219,8 +221,10 @@ class APIConnection(Connection):
                 if isinstance(val, (list, tuple)):
                     val = ",".join(val)
                 url += "&%s=%s" % (key, val)
+        self._api_url = url
         req = urllib2.urlopen(url)
         data = simplejson.loads(req.read())
+        self._api_raw_data = data
         if data and data.get('error', None):
             exceptions.BrightcoveError.raise_exception(
                 data['error'])
@@ -348,4 +352,5 @@ class ItemCollection(object):
         self.page_number = int(data['page_number'])
         self.page_size = int(data['page_size'])
         for item in data['items']:
-            self.items.append(item_class(data=item, _connection=_connection))
+            if item is not None:  # @@@ Not sure why but the Media API sometimes returns None for items in the list
+                self.items.append(item_class(data=item, _connection=_connection))
